@@ -53,10 +53,6 @@ pub fn upsert_node(conn: &Connection, node: &Node) -> Result<()> {
     Ok(())
 }
 
-pub fn delete_node(conn: &Connection, id: &str) -> Result<bool> {
-    Ok(conn.execute("DELETE FROM nodes WHERE id = ?1", params![id])? > 0)
-}
-
 /// Deterministic text search used by the Provider boundary. Semantic recall remains
 /// available to the full Omnicede agent runtime, but is not required to start the
 /// durable Provider process or download an embedding model.
