@@ -31,6 +31,63 @@ pub fn insert_node(conn: &Connection, node: &Node) -> Result<()> {
     Ok(())
 }
 
+/// Insert or replace a Provider-owned memory item with the same stable ID.
+pub fn upsert_node(conn: &Connection, node: &Node) -> Result<()> {
+    let embedding_blob: Option<Vec<u8>> = node.embedding.as_ref().map(|v| {
+        bytemuck::cast_slice::<f32, u8>(v).to_vec()
+    });
+    conn.execute(
+        "INSERT INTO nodes (id, kind, title, body, importance, trust_score,
+                            access_count, created_at, last_access, decay_rate, embedding)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11)
+         ON CONFLICT(id) DO UPDATE SET
+           kind=excluded.kind, title=excluded.title, body=excluded.body,
+           importance=excluded.importance, trust_score=excluded.trust_score,
+           decay_rate=excluded.decay_rate, embedding=excluded.embedding",
+        params![
+            node.id, node.kind.as_str(), node.title, node.body, node.importance,
+            node.trust_score, node.access_count, node.created_at, node.last_access,
+            node.decay_rate, embedding_blob,
+        ],
+    )?;
+    Ok(())
+}
+
+/// Deterministic text search used by the Provider boundary. Semantic recall remains
+/// available to the full Omnicede agent runtime, but is not required to start the
+/// durable Provider process or download an embedding model.
+pub fn search_nodes_text(conn: &Connection, query: &str, limit: usize) -> Result<Vec<Node>> {
+    let pattern = format!("%{}%", query.replace('%', "\\%").replace('_', "\\_"));
+    let mut stmt = conn.prepare(
+        "SELECT id, kind, title, body, importance, trust_score,
+                access_count, created_at, last_access, decay_rate, embedding
+         FROM nodes
+         WHERE title LIKE ?1 ESCAPE '\\' COLLATE NOCASE
+            OR body LIKE ?1 ESCAPE '\\' COLLATE NOCASE
+         ORDER BY importance DESC, created_at DESC, id ASC LIMIT ?2",
+    )?;
+    let rows = stmt.query_map(params![pattern, limit as i64], row_to_node)?;
+    rows.collect::<std::result::Result<Vec<_>, _>>().map_err(Into::into)
+}
+
+fn row_to_node(row: &rusqlite::Row<'_>) -> rusqlite::Result<Node> {
+    let embedding_blob: Option<Vec<u8>> = row.get(10)?;
+    let kind_str: String = row.get(1)?;
+    Ok(Node {
+        id: row.get(0)?,
+        kind: NodeKind::from_str_opt(&kind_str).unwrap_or(NodeKind::Fact),
+        title: row.get(2)?,
+        body: row.get(3)?,
+        importance: row.get(4)?,
+        trust_score: row.get(5)?,
+        access_count: row.get(6)?,
+        created_at: row.get(7)?,
+        last_access: row.get(8)?,
+        decay_rate: row.get(9)?,
+        embedding: embedding_blob.map(|b| blob_to_embedding(&b)),
+    })
+}
+
 pub fn get_node(conn: &Connection, id: &str) -> Result<Option<Node>> {
     conn.query_row(
         "SELECT id, kind, title, body, importance, trust_score,

@@ -1,16 +1,20 @@
 [package]
-name    = "omni-cede"
+name    = "omnicede"
 version = "0.1.0"
 edition = "2021"
-description = "Omnichannel self-aware agent. Fork of cede with HTTP API, identity, and session management."
+description = "Omnichannel self-aware agent and OmniSeed memory Provider with embedded graph memory."
 
 [lib]
-name = "omni_cede"
+name = "omnicede"
 path = "src/lib.rs"
 
 [[bin]]
-name = "omni-cede"
-path = "src/bin/omni_cede.rs"
+name = "omnicede"
+path = "src/bin/omnicede.rs"
+
+[[bin]]
+name = "omniseed-provider-omnicede"
+path = "src/bin/omniseed_provider.rs"
 
 [dependencies]
 rusqlite         = { version = "0.31", features = ["bundled"] }

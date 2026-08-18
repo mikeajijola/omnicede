@@ -7,14 +7,14 @@
 //! Run with: cargo test --test integration -- --test-threads=1
 //! (the embedding model is shared and not safe for parallel init)
 
-use omni_cede::config::Config;
-use omni_cede::db::Db;
-use omni_cede::db::queries;
-use omni_cede::embed::EmbedHandle;
-use omni_cede::hnsw::VectorIndex;
-use omni_cede::llm::MockLlmClient;
-use omni_cede::memory;
-use omni_cede::types::*;
+use omnicede::config::Config;
+use omnicede::db::Db;
+use omnicede::db::queries;
+use omnicede::embed::EmbedHandle;
+use omnicede::hnsw::VectorIndex;
+use omnicede::llm::MockLlmClient;
+use omnicede::memory;
+use omnicede::types::*;
 
 use std::sync::{Arc, OnceLock};
 use tokio::sync::RwLock;
@@ -324,7 +324,7 @@ async fn phase4_briefing_shows_contradictions() {
 
 #[tokio::test]
 async fn phase5_mock_llm_returns_scripted_responses() {
-    use omni_cede::llm::LlmClient;
+    use omnicede::llm::LlmClient;
 
     let mock = MockLlmClient::new(vec![LlmResponse {
         text: "Hello, world!".into(),
@@ -351,10 +351,10 @@ async fn phase5_mock_llm_returns_scripted_responses() {
 #[tokio::test]
 async fn phase6_tool_registry_executes_and_records() {
     let h = TestHarness::new();
-    let mut tools = omni_cede::tools::ToolRegistry::new();
+    let mut tools = omnicede::tools::ToolRegistry::new();
 
     // Register a simple echo tool
-    tools.register(omni_cede::tools::Tool {
+    tools.register(omnicede::tools::Tool {
         name: "echo".into(),
         description: "Echoes input".into(),
         input_schema: serde_json::json!({"type": "object", "properties": {"text": {"type": "string"}}}),
@@ -442,14 +442,15 @@ async fn phase7_agent_loop_end_to_end() {
         output_tokens: 10,
     }]);
 
-    let agent = omni_cede::agent::orchestrator::Agent {
+    let agent = omnicede::agent::orchestrator::Agent {
         db: h.db.clone(),
         embed: h.embed.clone(),
         hnsw: h.hnsw.clone(),
         config: h.config.clone(),
         llm: Arc::new(mock),
-        tools: omni_cede::tools::ToolRegistry::new(),
+        tools: omnicede::tools::ToolRegistry::new(),
         auto_link_tx: h.auto_link_tx.clone(),
+        notif_tx: None,
     };
 
     let response = agent.run("What is the meaning of life?").await.expect("run");
@@ -495,7 +496,7 @@ async fn phase8_decay_reduces_importance() {
     let node_id = h.remember(node).await;
 
     // Run decay via the public function (uses proportional elapsed-time decay)
-    omni_cede::run_decay(&h.db, h.config.decay_interval_secs)
+    omnicede::run_decay(&h.db, h.config.decay_interval_secs)
         .await
         .unwrap();
 
@@ -764,7 +765,7 @@ async fn graph_bfs_traverse() {
     // BFS from A with depth 2
     let aid = a_id.clone();
     let walked = h.db.call(move |conn| {
-        omni_cede::graph::bfs_walk(conn, &[aid], 2)
+        omnicede::graph::bfs_walk(conn, &[aid], 2)
     }).await.unwrap();
 
     assert!(walked.contains_key(&a_id), "BFS should include seed A");
@@ -838,7 +839,7 @@ async fn phase11_decay_proportional_to_elapsed_time() {
         .unwrap();
 
     // Run proportional decay (interval = 60s)
-    omni_cede::run_decay(&h.db, 60).await.unwrap();
+    omnicede::run_decay(&h.db, 60).await.unwrap();
 
     let nid2 = node_id;
     let updated = h
@@ -896,7 +897,7 @@ async fn phase11_decay_clamps_to_floor() {
         .await
         .unwrap();
 
-    omni_cede::run_decay(&h.db, 60).await.unwrap();
+    omnicede::run_decay(&h.db, 60).await.unwrap();
 
     let nid2 = node_id;
     let updated = h
@@ -975,7 +976,7 @@ async fn phase12_negation_keyword_detected() {
 
 #[tokio::test]
 async fn phase12_mock_llm_adjudicates_contradiction() {
-    use omni_cede::llm::MockLlmClient;
+    use omnicede::llm::MockLlmClient;
 
     let h = TestHarness::new();
 
@@ -991,7 +992,7 @@ async fn phase12_mock_llm_adjudicates_contradiction() {
         input_tokens: 0,
         output_tokens: 0,
     }]);
-    let llm: Arc<dyn omni_cede::llm::LlmClient> = Arc::new(mock);
+    let llm: Arc<dyn omnicede::llm::LlmClient> = Arc::new(mock);
 
     // Create two contradictory nodes
     let node_a = Node::new(NodeKind::Fact, "Earth distance")
@@ -1041,7 +1042,7 @@ async fn phase12_mock_llm_adjudicates_contradiction() {
 
 #[tokio::test]
 async fn phase12_mock_llm_rejects_false_positive() {
-    use omni_cede::llm::MockLlmClient;
+    use omnicede::llm::MockLlmClient;
 
     // Mock LLM that says "NO" (not a contradiction despite negation keywords)
     let mock = MockLlmClient::new(vec![LlmResponse {
@@ -1055,7 +1056,7 @@ async fn phase12_mock_llm_rejects_false_positive() {
         input_tokens: 0,
         output_tokens: 0,
     }]);
-    let llm: Arc<dyn omni_cede::llm::LlmClient> = Arc::new(mock);
+    let llm: Arc<dyn omnicede::llm::LlmClient> = Arc::new(mock);
 
     // Two nodes with negation keywords but not actually contradictory
     let messages = vec![Message::user(

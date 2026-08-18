@@ -1,6 +1,6 @@
 //! Session manager — one active session per (user_id, channel).
 //!
-//! In omni-cede, sessions are scoped to a specific user on a specific channel.
+//! In omnicede, sessions are scoped to a specific user on a specific channel.
 //! A WhatsApp conversation has its own session; the same user on Telegram gets
 //! a separate one. The recency window in the engine's hybrid recall operates
 //! on the session, giving each channel its own conversational flow while the

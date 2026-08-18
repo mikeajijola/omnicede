@@ -1,0 +1,20 @@
+name: Omnicede tests
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Check newly introduced Provider sources are formatted
+        run: rustfmt --edition 2021 --check src/omniseed_provider.rs src/bin/omniseed_provider.rs tests/provider_protocol.rs
+      - run: cargo test --all-targets --locked -- --test-threads=1

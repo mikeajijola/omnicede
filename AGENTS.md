@@ -1,18 +1,25 @@
-# agents.md — Guide for AI Agents Working on omni-cede
+# AGENTS.md — Guide for AI Agents Working on Omnicede
 
-You are working on **omni-cede**, the omnichannel deployment variant of the cortex-embedded cognitive engine. This file tells you how to navigate the codebase and contribute effectively.
+You are working on **omnicede**, the omnichannel deployment variant of the cortex-embedded cognitive engine. This file tells you how to navigate the codebase and contribute effectively.
 
 ## What This Repo Is
 
-omni-cede extends the cortex-embedded engine with:
+omnicede extends the cortex-embedded engine with:
 - **HTTP API** (axum) — stateless REST endpoints for multi-client messaging
 - **Identity resolution** — maps (channel, external_id) pairs to internal user IDs
 - **Session management** — one active session per (user_id, channel), automatic turn tracking
+- **OmniSeed Provider Protocol** — a company-isolated `memory` Provider backed by durable SQLite
+
+The Provider identity is the supplying Omnicede boundary. The embedded graph,
+SQLite, HNSW, agent, and HTTP API are products or implementation details under
+that boundary, not separate Providers. Omnicede implements only the canonical
+`memory` primitive-family contract and never claims to realise a business
+Capability directly.
 
 ### Ecosystem Position
 - **cortex-embedded** (upstream) — the frozen engine
 - **cede** — forkable starter kit (no API layer)
-- **omni-cede** (this repo) — production omnichannel variant
+- **omnicede** (this repo) — production omnichannel variant
 
 ## Repository Layout
 
@@ -53,7 +60,8 @@ src/
     graph_tui.rs      # Interactive TUI graph explorer
     graph_viz.rs      # ASCII graph visualization
   bin/
-    omni_cede.rs      # Binary entry point, tracing-subscriber init
+    omnicede.rs                  # Agent binary entry point
+    omniseed_provider.rs         # Provider Protocol v1 stdio entry point
 tests/
   integration.rs      # 22 integration tests
 ```
@@ -84,7 +92,7 @@ Returns:
 }
 ```
 
-## Key Architecture (omni-cede-specific)
+## Key Architecture (omnicede-specific)
 
 ### Identity Resolution (`src/identity/mod.rs`)
 - SQLite tables: `users` (id, created_at), `channel_mappings` (channel, external_id, user_id)
@@ -100,7 +108,7 @@ Returns:
 
 ### API Layer (`src/api/mod.rs`)
 - axum 0.8 Router with tower-http CORS and tracing
-- Auth middleware: checks `x-api-key` header against `OMNI_CEDE_API_KEY` env var
+- Auth middleware: checks `x-api-key` header against `API_KEY` env var
 - State: `Arc<AppState>` containing CortexEmbedded, IdentityResolver, SessionManager, Agent
 
 ### Additional Dependencies vs cede
@@ -112,7 +120,7 @@ Returns:
 | Variable | Required | Description |
 |----------|----------|-------------|
 | ANTHROPIC_API_KEY | Yes (unless --ollama) | Claude API key |
-| OMNI_CEDE_API_KEY | Yes (for API mode) | API authentication key |
+| API_KEY | Yes (for authenticated API mode) | API authentication key |
 | RUST_LOG | No | Tracing filter (default: info) |
 
 ## Build and Test
@@ -122,7 +130,7 @@ cargo build
 cargo test -- --test-threads=1    # 28 tests
 
 # Run the HTTP server
-OMNI_CEDE_API_KEY=secret cargo run -- serve --host 0.0.0.0 --port 3000
+API_KEY=secret cargo run -- serve --host 0.0.0.0 --port 3000
 ```
 
 ## Conventions

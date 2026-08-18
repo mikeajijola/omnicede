@@ -1,20 +1,23 @@
-# omni-cede
+# omnicede
 
-**Omnichannel AI agent powered by embedded memory graphs. One API, every channel, one graph.**
+**Omnichannel AI agent and OmniSeed memory Provider powered by embedded memory graphs. One API, every channel, one graph.**
 
-omni-cede extends [cede](https://github.com/MikeSquared-Agency/cede) with an HTTP API, identity resolution, and per-channel session management — all backed by an embedded memory graph (single SQLite file, no external DB). Connect WhatsApp, Telegram, Slack, Discord, or any custom integration — the agent remembers across all of them because every interaction is a node in the same graph.
+The canonical project and executable name is **Omnicede** (`omnicede`). The
+former `omni-cede` GitHub URL redirects here only for migration compatibility.
+
+omnicede extends [cede](https://github.com/MikeSquared-Agency/cede) with an HTTP API, identity resolution, and per-channel session management — all backed by an embedded memory graph (single SQLite file, no external DB). Connect WhatsApp, Telegram, Slack, Discord, or any custom integration — the agent remembers across all of them because every interaction is a node in the same graph.
 
 ## Ecosystem
 
 ```
 cortex-embedded          <-- embedded memory graph engine (upstream)
   |-- cede               <-- forkable starter kit
-       |-- omni-cede     <-- you are here (omnichannel deployment)
+       |-- omnicede     <-- you are here (omnichannel deployment)
 ```
 
-## What omni-cede Adds
+## What omnicede Adds
 
-On top of everything in cede (embedded memory graph, hybrid recall, auto-linking, decay, tools, sub-agents, TUI), omni-cede adds:
+On top of everything in cede (embedded memory graph, hybrid recall, auto-linking, decay, tools, sub-agents, TUI), omnicede adds:
 
 | Layer | What it does |
 |-------|-------------|
@@ -23,22 +26,47 @@ On top of everything in cede (embedded memory graph, hybrid recall, auto-linking
 | **Sessions** | One active session per (user, channel). WhatsApp gets its own conversational flow; Telegram gets another. Semantic recall searches the global graph — cross-channel knowledge |
 | **Auth** | `x-api-key` header middleware. Set `API_KEY` env var to enable; omit for dev mode |
 
+## OmniSeed memory Provider
+
+Omnicede is also a language-independent OmniSeed Provider Protocol v1
+implementation for the canonical `memory` primitive family. Its Provider ID is
+`omnicede`, identifying the supplying Omnicede boundary. SQLite, graph memory,
+HNSW, and the agent application are implementation choices beneath that
+Provider; Omnicede does not directly realise business Capabilities.
+
+The Provider advertises `organisational_context`, `engineering_history`, and
+`retained_company_knowledge`, plus the ordinary `index`, `update`, `remove`,
+`search`, and `retrieve` operations. Every process is bound to exactly one
+company and one durable SQLite file:
+
+```bash
+cargo build --release --bin omniseed-provider-omnicede
+# OmniSeed starts the binary and supplies databasePath + companyId during
+# provider.initialize; JSON-RPC is written only on stdout and diagnostics on stderr.
+```
+
+Creating a process or selecting `omnicede` in Omniform is not evidence that the
+Provider is connected or healthy. OmniSeed must apply and observe the declared
+memory resource and retain the resulting evidence. The SQLite file must live on
+durable storage; an ephemeral serverless filesystem is not a production
+deployment target.
+
 ## Quick Start
 
 ```bash
 # Clone
-git clone https://github.com/MikeSquared-Agency/omni-cede.git
-cd omni-cede
+git clone https://github.com/MikeSquared-Agency/omnicede.git
+cd omnicede
 
 # Build
 cargo build --release
 
 # Start the API server
-ANTHROPIC_API_KEY=sk-ant-... omni-cede serve
+ANTHROPIC_API_KEY=sk-ant-... omnicede serve
 # Custom host/port
-omni-cede serve --host 127.0.0.1 --port 8080
+omnicede serve --host 127.0.0.1 --port 8080
 # With Ollama
-omni-cede --ollama llama3 serve
+omnicede --ollama llama3 serve
 
 # Send a message
 curl -X POST http://localhost:3000/v1/message \
@@ -59,7 +87,7 @@ curl http://localhost:3000/v1/stats
 
 ```bash
 # Start with auth enabled
-API_KEY=my-secret-key ANTHROPIC_API_KEY=sk-ant-... omni-cede serve
+API_KEY=my-secret-key ANTHROPIC_API_KEY=sk-ant-... omnicede serve
 
 # Requests require the header
 curl -X POST http://localhost:3000/v1/message \
@@ -154,7 +182,7 @@ Each (user, channel) pair gets its own session. This means:
 
 ```
 +---------------------------------------------+
-|                 omni-cede                    |
+|                 omnicede                    |
 +-----------+-----------+---------------------+
 |  HTTP API |  Identity |  Session Manager    |
 | (axum)    | (channel  | (one per user +     |
@@ -179,21 +207,21 @@ Each (user, channel) pair gets its own session. This means:
 
 ## CLI Commands
 
-omni-cede retains all of cede's CLI commands and adds `serve`:
+omnicede retains all of cede's CLI commands and adds `serve`:
 
 ```bash
-omni-cede serve                    # Start HTTP API server (0.0.0.0:3000)
-omni-cede serve --port 8080        # Custom port
-omni-cede chat                     # Interactive CLI chat
-omni-cede ask "question"           # Single query
-omni-cede graph explore            # TUI graph explorer
-omni-cede graph overview           # Graph visualization
-omni-cede memory stats             # Memory statistics
-omni-cede memory search "query"    # Semantic search
-omni-cede soul show                # View identity
-omni-cede doctor                   # Health check
-omni-cede consolidate              # Trust propagation
-omni-cede init                     # Initialize DB + download model
+omnicede serve                    # Start HTTP API server (0.0.0.0:3000)
+omnicede serve --port 8080        # Custom port
+omnicede chat                     # Interactive CLI chat
+omnicede ask "question"           # Single query
+omnicede graph explore            # TUI graph explorer
+omnicede graph overview           # Graph visualization
+omnicede memory stats             # Memory statistics
+omnicede memory search "query"    # Semantic search
+omnicede soul show                # View identity
+omnicede doctor                   # Health check
+omnicede consolidate              # Trust propagation
+omnicede init                     # Initialize DB + download model
 ```
 
 ## Environment Variables
@@ -203,11 +231,11 @@ omni-cede init                     # Initialize DB + download model
 | `ANTHROPIC_API_KEY` | Yes* | Anthropic API key (*or use `--ollama`) |
 | `ANTHROPIC_MODEL` | No | Model override (default: `claude-sonnet-4-20250514`) |
 | `API_KEY` | No | If set, requires `x-api-key` header on all requests |
-| `RUST_LOG` | No | Tracing filter (default: `omni_cede=info,tower_http=info`) |
+| `RUST_LOG` | No | Tracing filter (default: `omnicede=info,tower_http=info`) |
 
 ## Staying Updated
 
-omni-cede tracks cede as `upstream`. To pull improvements:
+omnicede tracks cede as `upstream`. To pull improvements:
 
 ```bash
 git fetch upstream

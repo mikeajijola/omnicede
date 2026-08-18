@@ -4,7 +4,7 @@
 //! it receives messages via the HTTP API (`POST /v1/channels/webhook/inbound`)
 //! and optionally delivers replies by POSTing to a callback URL.
 //!
-//! Any system can integrate with omni-cede without a dedicated adapter by
+//! Any system can integrate with omnicede without a dedicated adapter by
 //! using the webhook channel.
 
 use std::sync::atomic::{AtomicBool, Ordering};
