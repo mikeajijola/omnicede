@@ -450,6 +450,7 @@ async fn phase7_agent_loop_end_to_end() {
         llm: Arc::new(mock),
         tools: omnicede::tools::ToolRegistry::new(),
         auto_link_tx: h.auto_link_tx.clone(),
+        notif_tx: None,
     };
 
     let response = agent.run("What is the meaning of life?").await.expect("run");
