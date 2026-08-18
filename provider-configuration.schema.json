@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/mikeajijola/omnicede/provider-configuration.schema.json",
+  "title": "Omnicede Provider configuration",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["databasePath"],
+  "properties": {
+    "databasePath": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Absolute path to a company-dedicated SQLite file on durable storage."
+    }
+  }
+}

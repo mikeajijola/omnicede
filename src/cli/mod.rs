@@ -6,10 +6,10 @@ mod graph_viz;
 mod graph_tui;
 
 #[derive(Parser)]
-#[command(name = "omni-cede", about = "Omnichannel self-aware agent with graph memory")]
+#[command(name = "omnicede", about = "Omnichannel self-aware agent with graph memory")]
 pub struct Cli {
     /// Path to the SQLite database file.
-    #[arg(long, default_value = "omni-cede.db")]
+    #[arg(long, default_value = "omnicede.db")]
     pub db: String,
 
     /// Use Ollama as the LLM backend (format: model@url, e.g. llama3@http://localhost:11434)
@@ -194,7 +194,7 @@ pub async fn run() -> crate::error::Result<()> {
 
             let app = crate::api::router(state.clone());
             let addr = format!("{host}:{port}");
-            println!("omni-cede API server listening on {addr}");
+            println!("omnicede API server listening on {addr}");
             if std::env::var("API_KEY").is_err() {
                 println!("  WARNING: API_KEY not set — auth disabled (dev mode)");
             }
@@ -663,7 +663,7 @@ pub async fn run() -> crate::error::Result<()> {
                 })
                 .await?;
 
-            println!("omni-cede chat — type 'exit' or Ctrl+C to quit\n");
+            println!("omnicede chat — type 'exit' or Ctrl+C to quit\n");
             let stdin = io::stdin();
             loop {
                 print!("> ");

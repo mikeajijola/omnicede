@@ -1,4 +1,4 @@
-# Omnichannel Integration Plan — omni-cede
+# Omnichannel Integration Plan — omnicede
 
 ## Inspiration
 
@@ -27,7 +27,7 @@ We just need to add the **channel adapter layer** — the part that connects rea
 
 ```
                     ┌─────────────────────────────────────────────────┐
-                    │                  omni-cede                       │
+                    │                  omnicede                       │
                     │                                                  │
   WhatsApp ──┐     │  ┌──────────────────────────────────────────┐   │
   Telegram ──┤     │  │            Channel Registry               │   │
@@ -406,7 +406,7 @@ Built-in web interface served from the gateway itself.
 
 ## Phase 4: Configuration System
 
-Unified TOML/JSON config file at `~/.omni-cede/config.toml`:
+Unified TOML/JSON config file at `~/.omnicede/config.toml`:
 
 ```toml
 [agent]
@@ -415,7 +415,7 @@ model = "anthropic/claude-sonnet-4-20250514"
 [gateway]
 host = "0.0.0.0"
 port = 3000
-api_key = "sk-..."  # or use OMNI_CEDE_API_KEY env var
+api_key = "sk-..."  # or use OMNICEDE_API_KEY env var
 
 [channels.telegram]
 enabled = true
@@ -452,7 +452,7 @@ Directly inspired by OpenClaw's DM pairing model:
 ### Pairing Flow
 1. Unknown sender messages the bot on any channel
 2. Bot replies with a 6-digit pairing code (stored in DB with expiry)
-3. Owner approves: `omni-cede pairing approve <channel> <code>`
+3. Owner approves: `omnicede pairing approve <channel> <code>`
 4. Sender is added to the persistent allowlist for that channel
 5. Future messages are processed normally
 
@@ -478,13 +478,13 @@ CREATE TABLE channel_allowlist (
 
 ### CLI Commands
 ```
-omni-cede serve                        # Start gateway + all enabled channels
-omni-cede channels list                # Show all channels and their health
-omni-cede channels status telegram     # Detailed status for one channel
-omni-cede pairing list                 # Pending pairing requests
-omni-cede pairing approve <code>       # Approve a pairing request
-omni-cede sessions list                # All active sessions across channels
-omni-cede doctor                       # Check config, credentials, connectivity
+omnicede serve                        # Start gateway + all enabled channels
+omnicede channels list                # Show all channels and their health
+omnicede channels status telegram     # Detailed status for one channel
+omnicede pairing list                 # Pending pairing requests
+omnicede pairing approve <code>       # Approve a pairing request
+omnicede sessions list                # All active sessions across channels
+omnicede doctor                       # Check config, credentials, connectivity
 ```
 
 ### API Endpoints (additions)

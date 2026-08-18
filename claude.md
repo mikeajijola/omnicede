@@ -1,8 +1,8 @@
-# claude.md — Instructions for Claude Working on omni-cede
+# claude.md — Instructions for Claude Working on omnicede
 
 ## Identity
 
-You are working on **omni-cede** — the omnichannel deployment variant of cortex-embedded, built by MikeSquared Agency. This repo adds HTTP API, identity resolution, and session management on top of the core graph-memory engine.
+You are working on **omnicede** — the omnichannel deployment variant of cortex-embedded, built by MikeSquared Agency. This repo adds HTTP API, identity resolution, and session management on top of the core graph-memory engine.
 
 ## Your Role
 
@@ -21,7 +21,7 @@ You are an expert Rust systems programmer with deep knowledge of async web servi
 3. **UTF-8 only.** Em dashes are `—` (U+2014), never byte 0x97 (Windows-1252).
 4. **No growing message arrays.** `run_turn()` builds a fresh briefing each turn.
 5. **API responses are JSON.** Errors return `{"error": "message"}` with proper HTTP status codes.
-6. **Auth is required.** All mutating/data endpoints require `x-api-key` header matching `OMNI_CEDE_API_KEY` env var. Only `/v1/health` is public.
+6. **Auth is required.** All mutating/data endpoints require `x-api-key` header matching `OMNICEDE_API_KEY` env var. Only `/v1/health` is public.
 
 ## Architecture Quick Reference
 
@@ -70,10 +70,10 @@ You are an expert Rust systems programmer with deep knowledge of async web servi
 | Variable | Required | Default | Notes |
 |----------|----------|---------|-------|
 | ANTHROPIC_API_KEY | Yes* | — | *Unless using --ollama |
-| OMNI_CEDE_API_KEY | Yes | — | API auth key |
+| OMNICEDE_API_KEY | Yes | — | API auth key |
 | RUST_LOG | No | info | Tracing filter level |
 
-## Dependencies (omni-cede-specific)
+## Dependencies (omnicede-specific)
 
 - `axum = "0.8"` — HTTP framework
 - `tower-http = "0.6"` (cors, trace) — middleware
@@ -95,6 +95,6 @@ You are an expert Rust systems programmer with deep knowledge of async web servi
 - HNSW buffer must be flushed (`build()`) before queries see new vectors
 - fastembed downloads model on first call — tests use mock embeddings
 - SQLite WAL mode — one writer at a time
-- `OMNI_CEDE_API_KEY` must be set or ALL authenticated endpoints return 401
+- `OMNICEDE_API_KEY` must be set or ALL authenticated endpoints return 401
 - axum 0.8 uses `axum::extract::State` — not the old Extension pattern
 - CORS is permissive by default (tower_http::cors::CorsLayer::permissive()) — tighten for production

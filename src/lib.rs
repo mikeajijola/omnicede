@@ -16,6 +16,7 @@ pub mod session;
 pub mod channels;
 pub mod scheduler;
 pub mod notification_delivery;
+pub mod omniseed_provider;
 #[cfg(feature = "browser")]
 pub mod browser;
 
