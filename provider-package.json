@@ -1,9 +1,13 @@
 {
   "manifestVersion": "1.0",
   "id": "omnicede",
+  "organisation": "Omnicede",
   "version": "0.1.0",
   "engineCompatibility": "omniseed.provider.protocol/1.0",
   "primitiveFamilies": ["memory"],
+  "implementations": [
+    { "family": "memory", "products": ["Embedded Graph Memory", "SQLite", "HNSW"] }
+  ],
   "operations": ["index", "update", "remove", "search", "retrieve"],
   "configurationSchema": "./provider-configuration.schema.json",
   "observationTypes": ["omnicede_memory_state"],
